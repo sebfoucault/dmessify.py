@@ -3,8 +3,8 @@ import md5
 import logging
 import os
 
+
 def files_walker(top):
-    result = []
     for root, dirs, filenames in os.walk(top):
         for filename in filenames:
             full_path = os.path.join(root, filename)
@@ -21,7 +21,7 @@ def unique_files_walker(top):
         if crc in crc_map:
             candidates = crc_map[crc]
             candidate = next( (x for x in candidates if filecmp.cmp(x, full_path, shallow=False)), None)
-            if candidate != None:
+            if candidate is not None:
                 logging.debug('Skipping "{}" same as {}.'.format(full_path, candidate))
                 duplicate = True
             else:
@@ -29,8 +29,9 @@ def unique_files_walker(top):
         else:
             crc_map[crc] = []
             crc_map[crc].append(full_path)
-        if duplicate == False:
+        if not duplicate:
             yield full_path
+
 
 def md5sum(filename):
     f = file(filename, 'r')
@@ -38,6 +39,7 @@ def md5sum(filename):
     hashValue = hasher.digest()
     f.close()
     return hashValue
+
 
 def exists_file_by_content(dirname, filename):
 

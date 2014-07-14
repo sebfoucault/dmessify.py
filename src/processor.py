@@ -56,13 +56,13 @@ class Processor:
 
     def _map(self, source_path, with_suffix):
         target_path = None
-        if with_suffix == False:
+        if not with_suffix:
             target_path = self._mapper.map(source_path)
         else:
             suffix = 1
             while True:
                 target_path = self._mapper.map(source_path, "{}".format(suffix))
-                if os.path.isfile(target_path) == False:
+                if not os.path.isfile(target_path):
                     break
                 suffix += 1
         return target_path
