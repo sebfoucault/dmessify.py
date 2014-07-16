@@ -11,7 +11,6 @@ def files_walker(top):
             yield full_path
 
 def unique_files_walker(top):
-
     crc_map = {}
 
     for full_path in files_walker(top):
