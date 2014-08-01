@@ -8,6 +8,7 @@ from time import gmtime
 #
 class ImagePathMapper:
     def __init__(self, options):
+
         self._options = options
         self._sequence_number = 0
 
@@ -31,7 +32,7 @@ class ImagePathMapper:
         dir_template = string.Template(dir_template_string)
 
         # Prepare the binding for template substitution
-        bindings = self._prepare_bindings(image_path, exif_tags);
+        bindings = self._prepare_bindings(image_path, exif_tags)
 
         self._sequence_number += 1
 

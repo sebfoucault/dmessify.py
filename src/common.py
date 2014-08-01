@@ -5,14 +5,21 @@ import os
 
 
 def files_walker(top):
+
+    if not os.path.exists(top):
+        raise Exception('The directory "{}" does not exist.'.format(top))
+
     for root, dirs, filenames in os.walk(top):
         for filename in filenames:
             full_path = os.path.join(root, filename)
             yield full_path
 
 def unique_files_walker(top):
-    crc_map = {}
 
+    if not os.path.exists(top):
+        raise Exception('The directory "{}" does not exist.'.format(top))
+
+    crc_map = {}
     for full_path in files_walker(top):
         crc = md5sum(full_path)
 
