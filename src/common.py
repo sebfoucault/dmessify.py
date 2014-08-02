@@ -1,5 +1,5 @@
 import filecmp
-import md5
+import hashlib
 import logging
 import os
 
@@ -41,7 +41,8 @@ def unique_files_walker(top):
 
 def md5sum(filename):
     f = file(filename, 'r')
-    hasher = md5.new(f.read(1024))
+    hasher = hashlib.md5()
+    hasher.update(f.read(1024))
     hashValue = hasher.digest()
     f.close()
     return hashValue
