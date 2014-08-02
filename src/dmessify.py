@@ -35,6 +35,7 @@ source_directory = args.source_directory
 target_directory = args.target_directory
 
 options = dict()
+options['dir.source'] = source_directory
 options['dir.target'] = target_directory
 options['dir.unmanaged'] = os.path.join(target_directory, "unmanaged")
 options['dir.template'] = "$year/$month"

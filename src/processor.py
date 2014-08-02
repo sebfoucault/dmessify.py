@@ -11,11 +11,23 @@ class Processor:
 
     def process(self, top, extensions):
 
-        error = 0
-        bypassed = 0
-        processed = 0
+        stats = {
+            "processed": 0,
+            "sourceDuplicate": 0,
+            "targetDuplicate": 0,
+            "unknownFileFormat": 0,
+            "handled": 0,
+            "error":0,
+        }
 
-        for source_path in common.unique_files_walker(top):
+        for source_path, source_duplicate, duplicated_path in common.unique_files_walker(top):
+
+            stats['processed'] += 1
+
+            if source_duplicate:
+                logging.debug('Skipping duplicate "{}" (same as {}).'.format(source_path, duplicated_path))
+                stats['sourceDuplicate'] += 1
+                continue
 
             filename, file_ext = os.path.splitext(source_path)
 
@@ -25,34 +37,32 @@ class Processor:
                 target_path = self._map(source_path, with_suffix = False)
                 target_dir = os.path.dirname(target_path)
                 
-                duplicate = False
+                target_duplicate = False
 
                 if os.path.exists(target_path):
                     if os.path.isfile(target_path) and filecmp.cmp(source_path, target_path, shallow=False):
                         logging.warning("The file {} already exist in {} with the same content. Skipping the file.".format(
                                         source_path, target_path))
-                        duplicate = True
+                        target_duplicate = True
                     elif common.exists_file_by_content(target_dir, source_path):
                         logging.warning("The file {} already exist in {} with the same content. Skipping the file.".format(
                                         source_path, target_dir))                        
-                        duplicate = True
+                        target_duplicate = True
                     else:
                         target_path = self._map(source_path, with_suffix=True)
 
-                if duplicate == False:            
-                    processed += 1
+                if target_duplicate == False:
                     self._file_processor.process(source_path, target_path)
+                    stats['handled'] += 1
                 else:
                     self._file_processor.ignore(source_path)
-                    bypassed += 1
+                    stats['targetDuplicate'] += 1
 
             else:
                 logging.warning("Invalid file format: {}".format(source_path))
-                bypassed += 1
+                stats['unknownFileFormat'] += 1
 
-        print("Processed files : {}".format(processed))
-        print("Bypassed files : {}".format(bypassed))
-        print("Error files : {}".format(error))
+        print(stats)
 
     def _map(self, source_path, with_suffix):
         target_path = None

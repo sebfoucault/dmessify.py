@@ -16,10 +16,11 @@ class FileProcessor:
 
     def ignore(self, source):
 
-        relpath = os.path.relpath(source)
-        _, ext = os.path.splitext(source)
-
+        source_dir = self._options['dir.source']
         unmanaged_dir = self._options['dir.unmanaged']
+
+        relpath = os.path.relpath(source, source_dir)
+        _, ext = os.path.splitext(source)
 
         target = os.path.join(unmanaged_dir, ext[1:], relpath)
         target_dir, target_file = os.path.split(target)

@@ -1,2 +1,2 @@
 #!/bin/bash
-python src/dmessify.py
+python src/dmessify.py $@

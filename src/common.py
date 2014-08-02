@@ -23,20 +23,19 @@ def unique_files_walker(top):
     for full_path in files_walker(top):
         crc = md5sum(full_path)
 
+        candidate = None
         duplicate = False
         if crc in crc_map:
             candidates = crc_map[crc]
             candidate = next( (x for x in candidates if filecmp.cmp(x, full_path, shallow=False)), None)
             if candidate is not None:
-                logging.debug('Skipping "{}" same as {}.'.format(full_path, candidate))
                 duplicate = True
             else:
                 crc_map[crc].append(full_path)                 
         else:
             crc_map[crc] = []
             crc_map[crc].append(full_path)
-        if not duplicate:
-            yield full_path
+        yield (full_path, duplicate, candidate)
 
 
 def md5sum(filename):
