@@ -4,12 +4,16 @@ import os
 import string 
 from time import gmtime
 
+
 # ImagePathMapper
 #
 class ImagePathMapper:
-    def __init__(self, options):
 
-        self._options = options
+    def __init__(self, base_output_directory, output_directory_pattern, output_file_pattern):
+
+        self._base_output_directory = base_output_directory
+        self._output_directory_pattern = output_directory_pattern
+        self._output_file_pattern = output_file_pattern
         self._sequence_number = 0
 
     def map(self, image_path, suffix=None):
@@ -25,11 +29,8 @@ class ImagePathMapper:
     def _map(self, image_path, exif_tags, suffix):
 
         # Create the templates
-        file_template_string = self._options['file.template']
-        file_template = string.Template(file_template_string)
-
-        dir_template_string = self._options['dir.template']
-        dir_template = string.Template(dir_template_string)
+        file_template = string.Template(self._output_file_pattern)
+        dir_template = string.Template(self._output_directory_pattern)
 
         # Prepare the binding for template substitution
         bindings = self._prepare_bindings(image_path, exif_tags)
@@ -37,12 +38,11 @@ class ImagePathMapper:
         self._sequence_number += 1
 
         # Apply the template
-        dir_target_result = self._options['dir.target']
         dir_result = dir_template.substitute(bindings)
         file_result = file_template.substitute(bindings)
 
         # Merge the result
-        result = os.path.join(dir_target_result, dir_result, file_result)
+        result = os.path.join(self._base_output_directory, dir_result, file_result)
 
         # Apply the suffix
         result = self._apply_suffix(result, suffix)
@@ -63,7 +63,7 @@ class ImagePathMapper:
             date = self._parser_creation_time(image_path)
 
         bindings = dict()
-        bindings['targetDir'] = self._options['dir.target']
+        bindings['targetDir'] = self._base_output_directory
         bindings['sequenceNumber'] = self._sequence_number
         bindings['extension'] = file_ext[1:]
         for date_key in date:

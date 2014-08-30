@@ -1,7 +1,7 @@
 import common
 import filecmp
-import logging
 import os
+
 
 class Processor:
 
@@ -17,50 +17,53 @@ class Processor:
             "targetDuplicate": 0,
             "unknownFileFormat": 0,
             "handled": 0,
-            "error":0,
+            "error": 0,
         }
 
-        for source_path, source_duplicate, duplicated_path in common.unique_files_walker(top):
+        for (source_path, source_duplicate, duplicated_path) in common.unique_files_walker(top):
 
             stats['processed'] += 1
 
+            # Check if the file is part of the files to be processed
             if source_duplicate:
-                logging.debug('Skipping duplicate "{}" (same as {}).'.format(source_path, duplicated_path))
+                self.log("SKIPPING_DUP_SOURCE", source_path, duplicated_path)
                 stats['sourceDuplicate'] += 1
                 continue
 
             filename, file_ext = os.path.splitext(source_path)
 
-            if file_ext.lower() in extensions:
-
-                logging.debug('Processing "{}"'.format(source_path))
-                target_path = self._map(source_path, with_suffix = False)
-                target_dir = os.path.dirname(target_path)
-                
-                target_duplicate = False
-
-                if os.path.exists(target_path):
-                    if os.path.isfile(target_path) and filecmp.cmp(source_path, target_path, shallow=False):
-                        logging.warning("The file {} already exist in {} with the same content. Skipping the file.".format(
-                                        source_path, target_path))
-                        target_duplicate = True
-                    elif common.exists_file_by_content(target_dir, source_path):
-                        logging.warning("The file {} already exist in {} with the same content. Skipping the file.".format(
-                                        source_path, target_dir))                        
-                        target_duplicate = True
-                    else:
-                        target_path = self._map(source_path, with_suffix=True)
-
-                if target_duplicate == False:
-                    self._file_processor.process(source_path, target_path)
-                    stats['handled'] += 1
-                else:
-                    self._file_processor.ignore(source_path)
-                    stats['targetDuplicate'] += 1
-
-            else:
-                logging.warning("Invalid file format: {}".format(source_path))
+            # Check is the file extension is manageable by the application
+            if not file_ext.lower() in extensions:
                 stats['unknownFileFormat'] += 1
+                self._file_processor.ignore(source_path)
+                continue
+
+            # Computing the path name
+            target_path = self._map(source_path, with_suffix=False)
+            target_dir = os.path.dirname(target_path)
+
+            target_duplicate = False
+
+            # Check if the computed path already exists
+            if os.path.exists(target_path):
+                # Same path and same content
+                if os.path.isfile(target_path) and filecmp.cmp(source_path, target_path, shallow=False):
+                    self.log("SKIPPING_DUP_TARGET", source_path, target_path)
+                    target_duplicate = True
+                # Something else with the same name but already exist under a different name
+                elif common.exists_file_by_content(target_dir, source_path):
+                    self.log("SKIPPING_DUP_TARGET", source_path, target_dir)
+                    target_duplicate = True
+                # Same path used by another file, need to add a suffix
+                else:
+                    target_path = self._map(source_path, with_suffix=True)
+
+            if not target_duplicate:
+                self.log("PROCESSING", source_path)
+                self._file_processor.process(source_path, target_path)
+                stats['handled'] += 1
+            else:
+                stats['targetDuplicate'] += 1
 
         print(stats)
 
@@ -76,3 +79,6 @@ class Processor:
                     break
                 suffix += 1
         return target_path
+
+    def log(self, event, filename, extra_info=None):
+        print("[{}] {}".format(event, filename))

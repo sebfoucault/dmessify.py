@@ -23,26 +23,23 @@ else:
     logging.warning('No logging.conf file found. Switching to default logging configuration.')
 
 # Parse arguments
-parser = argparse.ArgumentParser(description='Sort photo files.')    
-parser.add_argument('-s','--source-directory', metavar='directory', required=True,
-                        help='The source directory')
-parser.add_argument('-t','--target-directory', metavar='directory', required=True,
-                        help='The target directory')
+parser = argparse.ArgumentParser(description='Sort photo files.')
+parser.add_argument('-s', '--source-directory', metavar='directory', required=True,
+                    help='The source directory')
+parser.add_argument('-t', '--target-directory', metavar='directory', required=True,
+                    help='The target directory')
 
 args = parser.parse_args()
 
-source_directory = args.source_directory
-target_directory = args.target_directory
-
 options = dict()
-options['dir.source'] = source_directory
-options['dir.target'] = target_directory
-options['dir.unmanaged'] = os.path.join(target_directory, "unmanaged")
+options['dir.source'] = args.source_directory
+options['dir.target'] = args.target_directory
+options['dir.unmanaged'] = os.path.join(args.target_directory, "unmanaged")
 options['dir.template'] = "$year/$month"
 options['file.template'] = '$year-$month-$day.$hour.$minute.$second.$extension'
 
-path_mapper = mapper.ImagePathMapper(options)
-file_processor = fileprocessor.FileProcessor(options)
+path_mapper = mapper.ImagePathMapper(options['dir.target'], options['dir.template'], options['file.template'])
+file_processor = fileprocessor.FileProcessor(options['dir.source'], options['dir.unmanaged'])
 
 processor = processor.Processor(path_mapper, file_processor)
-processor.process(source_directory, ['.jpg', '.psd'])
+processor.process(options['dir.source'], ['.jpg', '.psd'])

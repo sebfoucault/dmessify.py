@@ -17,22 +17,19 @@ class TestMapper(unittest.TestCase):
         shutil.rmtree(self._output_directory)
 
     def test_simple_mapping(self):
-        options = self._create_default_options()
-        path_mapper = mapper.ImagePathMapper(options)
+        path_mapper = self._create_default_mapper()
         result = path_mapper.map(testutils.resource("resources/mapper/IMG-01.JPG"))
         rel_result = os.path.relpath(result, self._output_directory)
         self.assertEqual("2008/12/2008-12-06.14.11.06.JPG", rel_result)
 
     def test_simple_mapping_with_suffix(self):
-        options = self._create_default_options()
-        path_mapper = mapper.ImagePathMapper(options)
+        path_mapper = self._create_default_mapper()
         result = path_mapper.map(testutils.resource("resources/mapper/IMG-01.JPG"), "1")
         rel_result = os.path.relpath(result, self._output_directory)
         self.assertEqual("2008/12/2008-12-06.14.11.06-1.JPG", rel_result)
 
     def test_no_exif_mapping(self):
-        options = self._create_default_options()
-        path_mapper = mapper.ImagePathMapper(options)
+        path_mapper = self._create_default_mapper()
 
         input = testutils.resource("resources/mapper/IMG-02.JPG")
         result = path_mapper.map(input)
@@ -61,3 +58,8 @@ class TestMapper(unittest.TestCase):
         options['dir.template'] = "$year/$month"
         options['file.template'] = '$year-$month-$day.$hour.$minute.$second.$extension'
         return options
+
+    def _create_default_mapper(self):
+        opts = self._create_default_options()
+        m = mapper.ImagePathMapper(opts['dir.target'], opts['dir.template'], opts['file.template'])
+        return m
