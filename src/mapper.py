@@ -28,30 +28,36 @@ class ImagePathMapper:
 
     def _map(self, image_path, exif_tags, suffix):
 
-        # Create the templates
+        # Creates the templates
         file_template = string.Template(self._output_file_pattern)
         dir_template = string.Template(self._output_directory_pattern)
 
-        # Prepare the binding for template substitution
+        # Prepares the binding for template substitution
         bindings = self._prepare_bindings(image_path, exif_tags)
 
         self._sequence_number += 1
 
-        # Apply the template
+        # Applies the template
         dir_result = dir_template.substitute(bindings)
         file_result = file_template.substitute(bindings)
 
-        # Merge the result
+        # Makes sure that the result directory is relative directory
+        if dir_result[0] == '/':
+            dir_result = "." + dir_result
+
+        # Merges the result
         result = os.path.join(self._base_output_directory, dir_result, file_result)
 
-        # Apply the suffix
+        # Applies the suffix
         result = self._apply_suffix(result, suffix)
 
         return result
 
     def _prepare_bindings(self, image_path, exif_tags):
 
-        filename, file_ext = os.path.splitext(image_path)
+        (filename, file_ext) = os.path.splitext(image_path)
+        if file_ext is None or file_ext == "":
+            file_ext = ".unknown"
 
         date = None
         if 'EXIF DateTimeOriginal' in exif_tags.keys():

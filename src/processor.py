@@ -5,8 +5,9 @@ import os
 
 class Processor:
 
-    def __init__(self, mapper, file_processor):
-        self._mapper = mapper
+    def __init__(self, standard_mapper, unmanaged_mapper, file_processor):
+        self._standard_mapper = standard_mapper
+        self._unmanaged_mapper = unmanaged_mapper
         self._file_processor = file_processor
 
     def process(self, top, extensions):
@@ -30,16 +31,17 @@ class Processor:
                 stats['sourceDuplicate'] += 1
                 continue
 
-            filename, file_ext = os.path.splitext(source_path)
+            (filename, file_ext) = os.path.splitext(source_path)
 
-            # Check is the file extension is manageable by the application
+            # Checks is the file extension is manageable by the application
+            # and selects the correct mapper accordingly
+            mapper = self._standard_mapper
             if not file_ext.lower() in extensions:
                 stats['unknownFileFormat'] += 1
-                self._file_processor.ignore(source_path)
-                continue
+                mapper = self._unmanaged_mapper
 
-            # Computing the path name
-            target_path = self._map(source_path, with_suffix=False)
+            # Computes the path name
+            target_path = self._map(mapper, source_path, with_suffix=False)
             target_dir = os.path.dirname(target_path)
 
             target_duplicate = False
@@ -56,7 +58,7 @@ class Processor:
                     target_duplicate = True
                 # Same path used by another file, need to add a suffix
                 else:
-                    target_path = self._map(source_path, with_suffix=True)
+                    target_path = self._map(mapper, source_path, with_suffix=True)
 
             if not target_duplicate:
                 self.log("PROCESSING", source_path)
@@ -67,14 +69,14 @@ class Processor:
 
         print(stats)
 
-    def _map(self, source_path, with_suffix):
+    def _map(self, mapper, source_path, with_suffix):
         target_path = None
         if not with_suffix:
-            target_path = self._mapper.map(source_path)
+            target_path = mapper.map(source_path)
         else:
             suffix = 1
             while True:
-                target_path = self._mapper.map(source_path, "{}".format(suffix))
+                target_path = mapper.map(source_path, "{}".format(suffix))
                 if not os.path.isfile(target_path):
                     break
                 suffix += 1
