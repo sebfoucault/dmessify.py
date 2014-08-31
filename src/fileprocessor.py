@@ -4,12 +4,25 @@ import shutil
 
 
 class FileProcessor:
-    def __init__(self):
-        pass
+
+    MOVE = 1
+    COPY = 2
+
+    def __init__(self, mode):
+
+        self._mode = mode
 
     def process(self, source, target):
-        logging.info('Copying "{}" to "{}"'.format(source, target))
-        target_dir, target_file = os.path.split(target)
+
+        # Prepares the operation by creating the potentially unexisting directories
+        (target_dir, target_file) = os.path.split(target)
         if not os.path.exists(target_dir):
             os.makedirs(target_dir)
-        shutil.copyfile(source, target)
+
+        # Runs the actual operation
+        if self._mode == FileProcessor.COPY:
+            logging.info('Copying "{}" to "{}"'.format(source, target))
+            shutil.copyfile(source, target)
+        elif self._mode == FileProcessor.MOVE:
+            logging.info('Moving "{}" to "{}"'.format(source, target))
+            shutil.move(source, target)

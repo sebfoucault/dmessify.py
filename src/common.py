@@ -14,10 +14,17 @@ def files_walker(top):
             yield full_path
 
 
-def unique_files_walker(top):
-
+def unique_files_walker(top, stable):
     if not os.path.exists(top):
         raise Exception('The directory "{}" does not exist.'.format(top))
+
+    if stable:
+        return _unique_files_walker_generator(top)
+    else:
+        return _unique_files_walker_list(top)
+
+
+def _unique_files_walker_generator(top):
 
     crc_map = {}
     for full_path in files_walker(top):
@@ -36,6 +43,32 @@ def unique_files_walker(top):
             crc_map[crc] = []
             crc_map[crc].append(full_path)
         yield (full_path, duplicate, candidate)
+
+
+def _unique_files_walker_list(top):
+
+    result = []
+
+    crc_map = {}
+    for full_path in files_walker(top):
+        crc = md5sum(full_path)
+
+        candidate = None
+        duplicate = False
+        if crc in crc_map:
+            candidates = crc_map[crc]
+            candidate = next((x for x in candidates if filecmp.cmp(x, full_path, shallow=False)), None)
+            if candidate is not None:
+                duplicate = True
+            else:
+                crc_map[crc].append(full_path)
+        else:
+            crc_map[crc] = []
+            crc_map[crc].append(full_path)
+        item = (full_path, duplicate, candidate)
+        result.append(item)
+    return result
+
 
 
 def md5sum(filename):

@@ -1,14 +1,18 @@
-import common
 import filecmp
 import os
-
+import common
 
 class Processor:
 
-    def __init__(self, standard_mapper, unmanaged_mapper, file_processor):
+    def __init__(self,
+                 source_files_enumerator,
+                 standard_mapper, unmanaged_mapper,
+                 file_processor):
+
         self._standard_mapper = standard_mapper
         self._unmanaged_mapper = unmanaged_mapper
         self._file_processor = file_processor
+        self._source_files_enumerator = source_files_enumerator
 
     def process(self, top, extensions):
 
@@ -21,7 +25,7 @@ class Processor:
             "error": 0,
         }
 
-        for (source_path, source_duplicate, duplicated_path) in common.unique_files_walker(top):
+        for (source_path, source_duplicate, duplicated_path) in self._source_files_enumerator(top):
 
             stats['processed'] += 1
 
