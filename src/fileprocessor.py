@@ -26,3 +26,10 @@ class FileProcessor:
         elif self._mode == FileProcessor.MOVE:
             logging.info('Moving "{}" to "{}"'.format(source, target))
             shutil.move(source, target)
+
+    def ignore(self, source):
+
+        if self._mode == FileProcessor.COPY:
+            pass
+        else:
+            os.remove(source)

@@ -33,6 +33,7 @@ class Processor:
             if source_duplicate:
                 self.log("SKIPPING_DUP_SOURCE", source_path, duplicated_path)
                 stats['sourceDuplicate'] += 1
+                self._file_processor.ignore(source_path)
                 continue
 
             (filename, file_ext) = os.path.splitext(source_path)
@@ -62,13 +63,14 @@ class Processor:
                     target_duplicate = True
                 # Same path used by another file, need to add a suffix
                 else:
+                    self.log("PROCESSING", source_path)
                     target_path = self._map(mapper, source_path, with_suffix=True)
 
             if not target_duplicate:
-                self.log("PROCESSING", source_path)
                 self._file_processor.process(source_path, target_path)
                 stats['handled'] += 1
             else:
+                self._file_processor.ignore(source_path)
                 stats['targetDuplicate'] += 1
 
         print(stats)
