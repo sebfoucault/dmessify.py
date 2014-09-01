@@ -2,4 +2,6 @@
 .idea
 *.pyc
 htmlcov
+.coverage
+coverage.html
 out

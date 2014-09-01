@@ -19,7 +19,7 @@ class TestCommon(unittest.TestCase):
         result = []
         for source_path in common.unique_files_walker(testutils.resource("resources/unique-walker/one"), True):
             result.append(source_path)
-        self.assertEqual(1,len(result))
+        self.assertEqual(1, len(result))
         self.assertEqual("file.txt", os.path.basename(result[0][0]))
 
     def test_unique_files_walker_two(self):
@@ -31,4 +31,3 @@ class TestCommon(unittest.TestCase):
         self.assertEqual(False, result[0][1])
         self.assertEqual("file-02.txt", os.path.basename(result[1][0]))
         self.assertEqual(True, result[1][1])
-
