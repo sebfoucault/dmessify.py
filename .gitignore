@@ -1,4 +1,5 @@
-.idea
-htmlcov
 .coverage
+.idea
+*.pyc
+htmlcov
 out

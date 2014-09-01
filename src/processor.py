@@ -65,6 +65,8 @@ class Processor:
                 else:
                     self.log("PROCESSING", source_path)
                     target_path = self._map(mapper, source_path, with_suffix=True)
+            else:
+                self.log("PROCESSING", source_path)
 
             if not target_duplicate:
                 self._file_processor.process(source_path, target_path)
@@ -89,4 +91,7 @@ class Processor:
         return target_path
 
     def log(self, event, filename, extra_info=None):
-        print("[{}] {}".format(event, filename))
+        if extra_info is None:
+            print("[{}] {}".format(event, filename))
+        else:
+            print("[{}] {} ({})".format(event, filename, extra_info))
